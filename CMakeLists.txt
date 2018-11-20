@@ -92,6 +92,15 @@ else ()
     target_link_libraries(image_client ${OpenCV_LIBRARIES} ${EXT_LIBS_STATIC})
 endif ()
 
+add_executable(image_resampler src/clients/c++/image_resampler.cc)
+
+if (LINK_SHARED)
+    target_link_libraries(image_resampler ${OpenCV_LIBRARIES} ${EXT_LIBS_SHARED})
+else ()
+    target_link_libraries(image_resampler ${OpenCV_LIBRARIES} ${EXT_LIBS_STATIC})
+endif ()
+
+
 INSTALL(TARGETS image_client RUNTIME DESTINATION bin)
 
 
