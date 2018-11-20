@@ -15,9 +15,11 @@
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/imgcodecs.hpp>
 #include "src/core/model_config.pb.h"
+#include <boost/filesystem.hpp>
 
 namespace ni = nvidia::inferenceserver;
 namespace nic = nvidia::inferenceserver::client;
+using namespace boost::filesystem;
 
 namespace {
 
@@ -100,7 +102,7 @@ ParseProtocol(const std::string& str)
 
 void
 ParseModel(
-  const std::unique_ptr<nic::InferContext>& ctx, const size_t batch_size, size_t* c, size_t* h, size_t* w, ni::ModelInput::Format* format, bool verbose = false)
+  const std::unique_ptr<nic::InferContext>& ctx, size_t* c, size_t* h, size_t* w, ni::ModelInput::Format* format, bool verbose = false)
 {
   if (ctx->Inputs().size() != 1) {
     std::cerr
@@ -151,8 +153,7 @@ ParseModel(
   }
 }
 
-  void ResampleImage(const std::string& filename, size_t c, size_t h, size_t w,
-      ni::ModelInput::Format format, const std::string& out_filename)
+  void ResampleImage(const std::string& filename, size_t c, size_t h, size_t w, const std::string& out_filename)
   {
     cv::Mat src_img = cv::imread(filename);
     if (src_img.empty()) {
@@ -178,9 +179,7 @@ int
 main(int argc, char** argv)
 {
   bool verbose = false;
-  size_t batch_size = 1;
-  size_t topk = 1;
-  std::string preprocess_output_filename;
+  std::string dst_root = "/tmp";
   std::string model_name;
   int model_version = -1;
   std::string url("localhost:8000");
@@ -202,14 +201,8 @@ main(int argc, char** argv)
       case 'x':
         model_version = atoi(optarg);
         break;
-      case 'b':
-        batch_size = atoi(optarg);
-        break;
-      case 'c':
-        topk = atoi(optarg);
-        break;
       case 'p':
-        preprocess_output_filename = optarg;
+        dst_root = optarg;
         break;
       case 'i':
         protocol = ParseProtocol(optarg);
@@ -221,8 +214,6 @@ main(int argc, char** argv)
   }
 
   if (model_name.empty()) { Usage(argv, "-m flag must be specified"); }
-  if (batch_size <= 0) { Usage(argv, "batch size must be > 0"); }
-  if (topk <= 0) { Usage(argv, "topk must be > 0"); }
   if (optind >= argc) {
     Usage(argv, "image file or image folder must be specified");
   }
@@ -247,16 +238,23 @@ main(int argc, char** argv)
 
   size_t c, h, w;
   ni::ModelInput::Format format;
-  ParseModel(ctx, batch_size, &c, &h, &w, &format, verbose);
+  ParseModel(ctx, &c, &h, &w, &format, verbose);
 
-  // Read the file(s) and preprocess them into input data accordingly
-  std::vector<std::vector<std::string>> batched_filenames;
-  struct stat name_stat;
-  if (stat(argv[optind], &name_stat) == 0) {
-    ResampleImage(std::string(argv[optind]), c, h, w, format, "/tmp/test.jpg");
-  } else {
-    std::cerr << "Failed to find '" << std::string(argv[optind]) << "': "
-      << strerror(errno) << std::endl;
+  path src_root = argv[optind];
+  boost::filesystem::recursive_directory_iterator it{src_root};
+  boost::filesystem::recursive_directory_iterator end;
+
+  while (it != end) {
+    path p1(*it);
+    //std::cout <<p1 << ", " << p1.extension() << '\n';
+    if (p1.extension()==".jpg") {
+      std::string src = p1.generic_string();
+      std::string dst = dst_root + "/" + p1.stem().generic_string() + "_" + std::to_string(w)+"x" + std::to_string(h) + ".jpg";
+      std::cout << src << " -> " << dst << std::endl;
+      ResampleImage(src, c, h, w, dst);
+    }
+    it++;
   }
+
   return 0;
 }

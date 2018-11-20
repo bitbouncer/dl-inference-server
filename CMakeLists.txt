@@ -37,6 +37,20 @@ link_directories(${DEV_LIBRARY_PATH})
 
 find_package(OpenCV REQUIRED)
 
+find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+set(BOOST_LIBS
+        ${Boost_PROGRAM_OPTIONS_LIBRARY}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        pthread
+        rt
+        c
+        )
+
+SET(CSI_INCLUDE_PATH ${Boost_INCLUDE_DIR})
+
+
+
 #highgui core imgproc
 
 FILE(GLOB LIB_SRCS
@@ -64,8 +78,8 @@ endif ()
 
 #SET(OPENCV_STATIC_LIBS opencv_videoio opencv_imgcodecs opencv_video opencv_imgproc opencv_highgui opencv_core dl z)
 
-SET(EXT_LIBS_SHARED dl-inference  grpc++ protobuf curl glog crypto ssl pthread)
-SET(EXT_LIBS_STATIC dl-inference_s grpc++ protobuf curl glog crypto ssl pthread)
+SET(EXT_LIBS_SHARED dl-inference  grpc++ protobuf curl glog crypto ${BOOST_LIBS} ssl pthread)
+SET(EXT_LIBS_STATIC dl-inference_s grpc++ protobuf curl glog crypto ${BOOST_LIBS} ssl pthread)
 
 include_directories(${CMAKE_SOURCE_DIR} /usr/local/include/opencv4)
 #include_directories(${CMAKE_SOURCE_DIR})
