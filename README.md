@@ -243,7 +243,7 @@ command-line.
         Avg HTTP time: 16731 usec (send 723 usec + response wait 15982 usec + receive 26 usec)
       Server:
         Request count: 862
-        Avg request latency: 14377 usec (overhead 273 usec + wait 6502 usec + compute 7602 usec)
+        Avg request latency: 14377 usec (ovOpenImageIOerhead 273 usec + wait 6502 usec + compute 7602 usec)
 
 In the second mode perf\_client will generate a inferences/second
 vs. latency curve by increasing concurrency until a specificy latency

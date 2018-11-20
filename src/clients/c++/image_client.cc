@@ -38,6 +38,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/imgcodecs.hpp>
 #include "src/core/model_config.pb.h"
 
 namespace ni = nvidia::inferenceserver;
@@ -610,6 +612,7 @@ ParseModel(
   }
 }
 
+/*
 void FileToInputData(
   const std::string& filename, size_t c, size_t h, size_t w,
   ni::ModelInput::Format format, int type1, int type3, ScaleType scale,
@@ -636,6 +639,24 @@ void FileToInputData(
   // Pre-process the image to match input size expected by the model.
   Preprocess(img, format, type1, type3, c, cv::Size(w, h), scale, input_data);
 }
+ */
+
+  void FileToInputData(
+      const std::string& filename, size_t c, size_t h, size_t w,
+      ni::ModelInput::Format format, int type1, int type3, ScaleType scale,
+      std::vector<uint8_t>* input_data)
+  {
+    cv::Mat img = cv::imread(filename);
+    if (img.empty()) {
+      std::cerr << "error: unable to decode image " << filename << std::endl;
+      exit(1);
+    }
+
+    // Pre-process the image to match input size expected by the model.
+    Preprocess(img, format, type1, type3, c, cv::Size(w, h), scale, input_data);
+  }
+
+
 
 } //namespace
 

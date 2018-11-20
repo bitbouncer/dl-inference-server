@@ -5,6 +5,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_STATIC_LIBS "enable static linking support" ON)
 option(BUILD_SHARED_LIBS "enable shared linking support" OFF)
+option(LINK_SHARED "link shared" OFF)
+
+
 
 #GLOBAL DEFINITIONS
 add_definitions(-DRAPIDJSON_HAS_STDSTRING)
@@ -59,10 +62,13 @@ if (BUILD_STATIC_LIBS)
             )
 endif ()
 
+#SET(OPENCV_STATIC_LIBS opencv_videoio opencv_imgcodecs opencv_video opencv_imgproc opencv_highgui opencv_core dl z)
+
 SET(EXT_LIBS_SHARED dl-inference  grpc++ protobuf curl glog crypto ssl pthread)
 SET(EXT_LIBS_STATIC dl-inference_s grpc++ protobuf curl glog crypto ssl pthread)
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} /usr/local/include/opencv4)
+#include_directories(${CMAKE_SOURCE_DIR})
 link_directories(${DEV_LIBRARY_PATH})
 
 
